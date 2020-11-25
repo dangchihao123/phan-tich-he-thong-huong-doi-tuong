@@ -1,0 +1,52 @@
+--CREATE PROC sp_LenDanhSachDiem(@mamonhoc NVARCHAR(10), @tenmonhoc NVARCHAR(50),@sodvht SMALLINT, @malop NVARCHAR(10))
+--AS 
+--BEGIN 
+--	INSERT INTO monhoc VALUES(@mamonhoc,@tenmonhoc,@sodvht); 
+--	INSERT INTO diemthi(mamonhoc,masv) SELECT @mamonhoc,masv FROM sinhvien WHERE malop=@malop 
+--END 
+--sp_LenDanhSachDiem N'TI005',N'Cơ sở dữ liệu',5,N'C24102';
+
+--delete from diemthi
+--where mamonhoc=N'TI005'
+--delete top(1) from diemthi where mamonhoc=N'TI005'
+---------------------------
+--1.
+--create proc themmathang(@mahang nvarchar(10),@tenhang nvarchar(50),@soluong int,@donvitinh nvarchar(20),
+--					@giahang money,@macongty nvarchar(10),@maloaihang int)
+--as 
+--begin
+--	insert into mathang values(@mahang,@tenhang,@macongty,@maloaihang,@soluong,@donvitinh,@giahang);
+--end
+
+--themmathang N'h6',N'sua ong tho',6,N'lon',15000,N'ncc5',1
+--2.Tạo thủ tục lưu trữ có chức năng thống kê tổng số lượng 
+--hàng bán được của một mặt hàng có mã bất kỳ 
+--(mã mặt hàng cần thống kê là tham số của thủ tục). 
+--create proc thongke_tongsoluong_1mathang(@mahang nvarchar(10))
+--as
+
+--begin
+--	select sum(chitietdathang.soluong) as tongsoluong
+--	from chitietdathang
+--	where mahang = @mahang
+--end
+--	thongke_tongsoluong_1mathang N'h1'
+
+-- 3. Viết thủ tục liệt kê chi tiết một đơn đặt hàng bất kỳ nào đó
+--create proc lietke_chitiet_1dondathang(@sohoadon int)
+--as
+--begin
+--	select * from chitietdathang where sohoadon = @sohoadon
+--end
+
+--lietke_chitiet_1dondathang 1
+--4.Viết thủ tục tính trị giá từng đơn đặt hàng của từng khách hàng nào đó.
+create proc tonggiatri_dondathang(@makhachhang nvarchar(10))
+as
+begin
+	select khachhang.makhachhang,khachhang.tencongty,chitietdathang.sohoadon,sum(chitietdathang.soluong*giaban) as tong
+	from chitietdathang , dondathang , khachhang
+	where khachhang.makhachhang = dondathang.makhachhang and dondathang.sohoadon = chitietdathang.sohoadon and  khachhang.makhachhang = @makhachhang
+	group by khachhang.makhachhang,khachhang.tencongty,chitietdathang.sohoadon
+end
+tonggiatri_dondathang N'kh1'
